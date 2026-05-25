@@ -1,0 +1,6 @@
+{
+  "name": "ZERO AI Unified Assistant",
+  "description": "A premium, super-smart multi-model AI assistant named ZERO, with Think Mode, custom model presets, and persona assistants in a modern glowing dark dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

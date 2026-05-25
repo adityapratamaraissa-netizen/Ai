@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile, configuration, and premium status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique Firebase Auth user ID" },
+        "email": { "type": "string", "description": "The user's email address" },
+        "displayName": { "type": "string", "description": "The user's name" },
+        "isPremium": { "type": "boolean", "description": "Membership status, premium access toggle" },
+        "role": { "type": "string", "description": "User hierarchy role, default 'user', option 'admin'" },
+        "customApiKey": { "type": "string", "description": "User-supplied API key if they want to use their own" },
+        "language": { "type": "string", "description": "UI display language preference" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "email"]
+    },
+    "chat": {
+      "title": "Chat",
+      "description": "A conversation thread session created by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "A unique identifier for the conversation session" },
+        "title": { "type": "string", "description": "Aggregated or custom title of the chat" },
+        "userId": { "type": "string", "description": "The owner user ID who created this chat" },
+        "modelType": { "type": "string", "description": "The style of model chosen (ChatGPT, Gemini, Claude, or Dola)" },
+        "assistantType": { "type": "string", "description": "The current persona mode (e.g. general, coding, study)" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title"]
+    },
+    "message": {
+      "title": "Message",
+      "description": "An indexable chat message in a specific conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique key for the message" },
+        "chatId": { "type": "string", "description": "Association pointer to parents chat document" },
+        "userId": { "type": "string", "description": "User creator UID or system bot string" },
+        "role": { "type": "string", "description": "Role of speaker: 'user' or 'model'" },
+        "content": { "type": "string", "description": "Payload message text" },
+        "reasoning": { "type": "string", "description": "Optional Thinking response text from the model for Think Mode" },
+        "imageUrl": { "type": "string", "description": "Optional inline image url base64/hosting if sent with message" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "chatId", "userId", "role", "content"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "user",
+      "description": "Top-level collection for storing user profiles and custom API key configuration."
+    },
+    "chats/{chatId}": {
+      "schema": "chat",
+      "description": "Collection tracking separate chat sessions per user."
+    },
+    "chats/{chatId}/messages/{messageId}": {
+      "schema": "message",
+      "description": "Subcollection under each chat session document keeping messages sequentially ordered."
+    }
+  }
+}

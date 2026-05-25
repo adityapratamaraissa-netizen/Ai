@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-cyan: #00f2fe;
+  --color-brand-purple: #9d4edd;
+  --color-brand-blue: #4cc9f0;
+  --color-dark-bg: #0b0c10;
+  --color-panel-bg: #1f2833;
+}
+
+/* Base style resets */
+body {
+  background-color: #050508;
+  color: #f1f5f9;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars for pristine look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.3);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.6);
+}
+
+/* Customized Glowing Keyframes */
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(0, 242, 254, 0.6), 0 0 12px rgba(0, 242, 254, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.9), 0 0 24px rgba(0, 242, 254, 0.5), 0 0 30px rgba(157, 78, 221, 0.4);
+  }
+}
+
+.text-glow {
+  animation: neon-pulse 4s infinite alternate;
+}
+
+/* Typing animation keyframes */
+@keyframes blink {
+  50% { border-color: transparent }
+}
+
+.cursor-blink {
+  border-right: 2px solid #00f2fe;
+  animation: blink 0.75s step-end infinite;
+}

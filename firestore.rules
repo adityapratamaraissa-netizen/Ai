@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) 
+        && incoming().uid == request.auth.uid
+        && incoming().email == request.auth.token.email
+        && (!incoming().keys().hasAll(['role']) || incoming().role == 'user')
+        && (!incoming().keys().hasAll(['isPremium']) || incoming().isPremium == false)
+        && incoming().keys().size() <= 10;
+      
+      allow update: if isOwner(userId)
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && (!incoming().keys().hasAll(['role']) || incoming().role == existing().role)
+        && (!incoming().keys().hasAll(['isPremium']) || incoming().isPremium == existing().isPremium)
+        && incoming().keys().size() <= 10;
+    }
+
+    // 2. Chats Collection
+    match /chats/{chatId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() 
+        && incoming().userId == request.auth.uid
+        && incoming().title is string
+        && incoming().title.size() <= 200
+        && incoming().id == chatId
+        && isValidId(chatId);
+        
+      allow update: if isSignedIn() 
+        && existing().userId == request.auth.uid
+        && incoming().userId == request.auth.uid
+        && incoming().title is string
+        && incoming().title.size() <= 200
+        && incoming().id == existing().id;
+
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    // 3. Messages Subcollection (relational sync)
+    match /chats/{chatId}/messages/{messageId} {
+      function isChatOwner(cId) {
+        return get(/databases/$(database)/documents/chats/$(cId)).data.userId == request.auth.uid;
+      }
+
+      allow get, list: if isSignedIn() && isChatOwner(chatId);
+      
+      allow create: if isSignedIn() 
+        && isChatOwner(chatId)
+        && incoming().chatId == chatId
+        && incoming().id == messageId
+        && isValidId(messageId)
+        && (incoming().role == 'user' || incoming().role == 'model')
+        && incoming().content is string
+        && incoming().content.size() <= 500000;
+
+      allow update: if false; // Chats are usually immutable or not edited, except if user allows it - but let's keep it simple and safe.
+      allow delete: if isSignedIn() && isChatOwner(chatId);
+    }
+  }
+}
